@@ -1,0 +1,129 @@
+public class Material {
+    private String nome;
+    private boolean conferido;
+
+    public Material(String nome) {
+        this.nome = nome;
+        this.conferido = false;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public boolean isConferido() {
+        return conferido;
+    }
+
+    public void setConferido(boolean conferido) {
+        this.conferido = conferido;
+    }
+
+    @Override
+    public String toString() {
+        return nome + (conferido ? " (Conferido)" : " (Não conferido)");
+    }
+}
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class ChecklistApp {
+    private List<Material> materiais;
+
+    public ChecklistApp() {
+        this.materiais = new ArrayList<>();
+    }
+
+    public void adicionarMaterial(String nome) {
+        materiais.add(new Material(nome));
+    }
+
+    public void marcarConferido(int index) {
+        if (index >= 0 && index < materiais.size()) {
+            materiais.get(index).setConferido(true);
+        }
+    }
+
+    public List<Material> getMateriais() {
+        return materiais;
+    }
+}
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class ChecklistGUI extends JFrame {
+    private ChecklistApp checklistApp;
+    private DefaultListModel<String> listModel;
+    private JList<String> materialList;
+
+    public ChecklistGUI(ChecklistApp checklistApp) {
+        this.checklistApp = checklistApp;
+        this.listModel = new DefaultListModel<>();
+
+        setTitle("Checklist de Materiais");
+        setSize(400, 300);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+
+        // Criação dos componentes
+        materialList = new JList<>(listModel);
+        JScrollPane scrollPane = new JScrollPane(materialList);
+
+        JTextField materialField = new JTextField(20);
+        JButton addButton = new JButton("Adicionar Material");
+        JButton markButton = new JButton("Marcar como Conferido");
+
+        // Adicionando componentes ao frame
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout());
+        panel.add(new JLabel("Material:"));
+        panel.add(materialField);
+        panel.add(addButton);
+        panel.add(markButton);
+
+        add(scrollPane, BorderLayout.CENTER);
+        add(panel, BorderLayout.SOUTH);
+
+        // Funcionalidades dos botões
+        addButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String nome = materialField.getText().trim();
+                if (!nome.isEmpty()) {
+                    checklistApp.adicionarMaterial(nome);
+                    atualizarLista();
+                    materialField.setText("");
+                }
+            }
+        });
+
+        markButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedIndex = materialList.getSelectedIndex();
+                if (selectedIndex != -1) {
+                    checklistApp.marcarConferido(selectedIndex);
+                    atualizarLista();
+                }
+            }
+        });
+
+        setVisible(true);
+    }
+
+    private void atualizarLista() {
+        listModel.clear();
+        for (Material material : checklistApp.getMateriais()) {
+            listModel.addElement(material.toString());
+        }
+    }
+
+    public static void main(String[] args) {
+        ChecklistApp app = new ChecklistApp();
+        new ChecklistGUI(app);
+    }
+}
